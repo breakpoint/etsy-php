@@ -104,7 +104,7 @@ $types_string = "";
 $resources_string = "";
 foreach ($unique_types as $type) {
     $types_string.=" * @property \breakpoint\\etsy\Resources\\".$type." ".strtolower($type).PHP_EOL;
-    $resources_string.=" '$type' => \breakpoint\\etsy\Resources\\$type::class,".PHP_EOL;
+    $resources_string.=" '".strtolower($type)."' => \breakpoint\\etsy\Resources\\$type::class,".PHP_EOL;
 }
 
 // write types and resources file
