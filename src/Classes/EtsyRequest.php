@@ -310,7 +310,7 @@ class EtsyRequest {
      * @param string $method
      * @param array $parameters
      * @param array $data
-     * @return bool|EtsyResults|MessageInterface
+     * @return bool|EtsyResults|MessageInterface|null
      * @throws \Exception
      */
     protected function request($path, $method = 'GET', array $parameters = [], array $data = []) {
@@ -346,45 +346,49 @@ class EtsyRequest {
 
             $response = $client->request($method, $path, $this->buildGuzzleOptions($parameters, $data));
 
+            // clear settings for another request
+            $this->fields = [];
+            $this->associations = [];
+            $this->v3 = false;
 
-        } catch (ClientException $e) {
+            // wants raw resonse
+            if ($this->raw) {
 
-            if ($e->getCode() == 403) {
-                throw new \Exception('Etsy-PHP: Authenticated required for this method or credentials are missing.');
+                // restore default for subsequent requests
+                $this->raw = false;
+
+                return $response;
             }
-        } catch (GuzzleException $e) {
+
+            // expecting results
+            if ($method == 'GET') {
+
+                // decode and store contents
+                $contents = json_decode($response->getBody()->getContents(), true);
+
+                if ($response->getStatusCode() == 404) {
+                    return null;
+                }
+
+                // always return an array of results
+                return new EtsyResults($contents);
+            }
+
+            return in_array($response->getStatusCode(), [200, 201]);
+
+        } catch (\Exception $e) {
+
+            if ($e instanceof ClientException) {
+                if ($e->getCode() == 404) {
+                    return null;
+                }
+
+                if ($e->getCode() == 403) {
+                    throw new \Exception('Etsy-PHP: Authenticated required for this method or credentials are missing.');
+                }
+            }
+
             throw new \Exception("Etsy-PHP: An unknown error has occurred.");
         }
-
-        // nothing found OR 404
-        if (null === $response || $response->getStatusCode() == 404) {
-            throw new \Exception('Etsy-PHP: '.self::V2_URI.$path.' is not found.');
-        }
-
-        // clear settings for another request
-        $this->fields = [];
-        $this->associations = [];
-        $this->v3 = false;
-
-        // wants raw resonse
-        if ($this->raw) {
-
-            // restore default for subsequent requests
-            $this->raw = false;
-
-            return $response;
-        }
-
-        // expecting results
-        if ($method == 'GET') {
-
-            // decode and store contents
-            $contents = json_decode($response->getBody()->getContents(), true);
-
-            // always return an array of results
-            return new EtsyResults($contents);
-        }
-
-        return in_array($response->getStatusCode(), [200, 201]);
     }
 }
