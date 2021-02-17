@@ -59,7 +59,6 @@ namespace breakpoint\etsy;
  * @property \breakpoint\etsy\Resources\ShopSection shopsection
  * @property \breakpoint\etsy\Resources\ShopSectionTranslation shopsectiontranslation
  * @property \breakpoint\etsy\Resources\ShopTranslation shoptranslation
- * @property \breakpoint\etsy\Resources\String string
  * @property \breakpoint\etsy\Resources\Style style
  * @property \breakpoint\etsy\Resources\Taxonomy taxonomy
  * @property \breakpoint\etsy\Resources\TaxonomyNodeProperty taxonomynodeproperty
@@ -101,7 +100,6 @@ class EtsyClient {
         'guest' => \breakpoint\etsy\Resources\Guest::class,
         'guestcart' => \breakpoint\etsy\Resources\GuestCart::class,
         'imagetype' => \breakpoint\etsy\Resources\ImageType::class,
-        'int' => \breakpoint\etsy\Resources\Int::class,
         'ledger' => \breakpoint\etsy\Resources\Ledger::class,
         'ledgerentry' => \breakpoint\etsy\Resources\LedgerEntry::class,
         'listing' => \breakpoint\etsy\Resources\Listing::class,
