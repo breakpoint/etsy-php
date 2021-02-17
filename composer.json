@@ -1,0 +1,27 @@
+{
+    "name": "breakpoint/etsy-php",
+    "description": "PHP wrapper for the Etsy api.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "breakpoint",
+            "email": "10792467+breakpoint@users.noreply.github.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "breakpoint\\etsy\\": "src/"
+        }
+    },
+    "require": {
+        "guzzlehttp/oauth-subscriber": "^0.4.0",
+        "guzzlehttp/guzzle": "^7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    },
+    "suggest": {
+        "y0lk/oauth1-etsy": "To easily create access tokens for authenticated requests."
+    }
+}
