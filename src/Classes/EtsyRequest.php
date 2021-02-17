@@ -41,7 +41,7 @@ class EtsyRequest {
 
         // absolutely must have key string / api key
         if (false === array_key_exists('keystring', $config)) {
-            throw new \Exception('Missing keystring.');
+            throw new \Exception('Etsy-PHP: Missing keystring.');
         }
 
         // store config
@@ -88,7 +88,7 @@ class EtsyRequest {
      */
     protected function oauth() {
         if (null === $this->config['token_access'] || null === $this->config['token_secret']) {
-            throw new \Exception("OAuth values missing: token_access or token_secret.");
+            throw new \Exception("Etsy-PHP: OAuth missing token_access or token_secret.");
         }
         return $this;
     }
@@ -336,25 +336,29 @@ class EtsyRequest {
 
         // required parameter is missing
         if (strpos($path, ':') > 0) {
-            throw new \Exception('Required parameter is missing.');
+            throw new \Exception('Etsy-PHP: Required parameter is missing.');
         }
 
         try {
 
-            $response = $this->client->request($method, $path, $this->buildGuzzleOptions($parameters, $data));
+            // use v3 client?
+            $client = $this->v3 ? new Client(['base_uri' => self::V3_URI]) : $this->client;
+
+            $response = $client->request($method, $path, $this->buildGuzzleOptions($parameters, $data));
+
 
         } catch (ClientException $e) {
 
             if ($e->getCode() == 403) {
-                throw new \Exception('Authenticated required for this method or credentials are missing.');
+                throw new \Exception('Etsy-PHP: Authenticated required for this method or credentials are missing.');
             }
         } catch (GuzzleException $e) {
-            throw new \Exception("An unknown error has occurred.");
+            throw new \Exception("Etsy-PHP: An unknown error has occurred.");
         }
 
         // nothing found OR 404
         if (null === $response || $response->getStatusCode() == 404) {
-            throw new \Exception(self::V2_URI.$path.' is not found.');
+            throw new \Exception('Etsy-PHP: '.self::V2_URI.$path.' is not found.');
         }
 
         // clear settings for another request
