@@ -1,5 +1,8 @@
 # Etsy PHP API Wrapper  
 
+[![Version](https://poser.pugx.org/breakpoint/etsy-php/version)](//packagist.org/packages/breakpoint/etsy-php)
+[![Total Downloads](https://poser.pugx.org/breakpoint/etsy-php/downloads)](//packagist.org/packages/breakpoint/etsy-php)
+
 This library aims to provide an easy way to access all methods of the [Etsy](https://etsy.com) API.  The structure is based on the organization of the [Etsy API documentation](https://www.etsy.com/developers/documentation/reference/apimethod). Methods are organized based upon their "Type" such as Listing, User, etc. 
 
 ### Table of Contents
