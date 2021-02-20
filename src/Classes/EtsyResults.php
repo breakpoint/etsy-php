@@ -28,7 +28,7 @@ class EtsyResults implements ArrayAccess, Iterator, Countable {
 
             // is an iterable item with array of attributes
             if (is_numeric($key) && is_array($value)) {
-                $this->add(new EtsyObject($value));
+                $this->add(new EtsyObject($value, $elements['type'] ?? null));
             } else {
                 $this->add(new EtsyObject([$key => $value]));
             }
