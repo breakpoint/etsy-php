@@ -351,7 +351,7 @@ class EtsyRequest {
             $this->associations = [];
             $this->v3 = false;
 
-            // wants raw resonse
+            // wants raw response
             if ($this->raw) {
 
                 // restore default for subsequent requests
@@ -376,19 +376,23 @@ class EtsyRequest {
 
             return in_array($response->getStatusCode(), [200, 201]);
 
-        } catch (\Exception $e) {
+        } catch (ClientException $e) {
 
-            if ($e instanceof ClientException) {
-                if ($e->getCode() == 404) {
-                    return null;
-                }
-
-                if ($e->getCode() == 403) {
+            switch ($e->getCode()) {
+                case 400:
+                    throw new \Exception('Etsy-PHP: 400 Bad Request; check your request parameters.');
+                case 403:
                     throw new \Exception('Etsy-PHP: Authenticated required for this method or credentials are missing.');
-                }
-            }
+                case 404:
+                    return null; // nothing found
+                case 500:
+                    throw new \Exception('Etsy-PHP: 500 Server Error; please try again.');
+                case 503:
+                    throw new \Exception('Etsy-PHP: 503 Service Unavailable; please try again later.');
 
-            throw new \Exception("Etsy-PHP: An unknown error has occurred.");
+            }
         }
+
+        throw new \Exception("Etsy-PHP: An unknown error has occurred.");
     }
 }
