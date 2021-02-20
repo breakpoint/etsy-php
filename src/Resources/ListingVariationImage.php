@@ -2,7 +2,10 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
+use breakpoint\etsy\Classes\EtsyResults;
 use breakpoint\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://www.etsy.com/developers/documentation/reference/listingvariationimage
@@ -16,21 +19,22 @@ class ListingVariationImage extends EtsyRequest {
      * Gets all variation images on a listing
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function getVariationImages(array $parameters = []) {
-        return $this->get('/listings/:listing_id/variation-images', $parameters);
+        return $this->requestCollection('GET', '/listings/:listing_id/variation-images', $parameters);
     }
 
     /**
+     * Creates variation images on a listing
+     *
      * @param array $parameters
-     * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
-    public function updateVariationImages(array $parameters = [], array $data = []) {
-        return $this->oauth()->post('/listings/:listing_id/variation-images', $parameters, $data);
+    public function updateVariationImages(array $parameters = []) {
+        return $this->oauth()->requestObject('POST', '/listings/:listing_id/variation-images', $parameters);
     }
 
 }

@@ -2,7 +2,10 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
+use breakpoint\etsy\Classes\EtsyResults;
 use breakpoint\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://www.etsy.com/developers/documentation/reference/page
@@ -16,53 +19,22 @@ class Page extends EtsyRequest {
      * Find a single page.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
     public function findPage(array $parameters = []) {
-        return $this->get('/pages/:page_id', $parameters);
+        return $this->requestObject('GET', '/pages/:page_id', $parameters);
     }
 
     /**
      * Lists the pages that the current user is following
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function listFollowingPages(array $parameters = []) {
-        return $this->get('/users/:user_id/connected_pages', $parameters);
-    }
-
-    /**
-     * @param array $parameters
-     * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
-     * @throws \Exception
-     */
-    public function pagesSignup(array $parameters = [], array $data = []) {
-        return $this->post('/pages-signup', $parameters, $data);
-    }
-
-    /**
-     * @param array $parameters
-     * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
-     * @throws \Exception
-     */
-    public function followPage(array $parameters = [], array $data = []) {
-        return $this->post('/users/:user_id/connected_pages', $parameters, $data);
-    }
-
-    /**
-     * Unfollow a page.
-     *
-     * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
-     * @throws \Exception
-     */
-    public function unfollowPage(array $parameters = []) {
-        return $this->delete('/users/:user_id/connected_pages/:page_id', $parameters);
+        return $this->requestCollection('GET', '/users/:user_id/connected_pages', $parameters);
     }
 
 }

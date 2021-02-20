@@ -2,7 +2,10 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
+use breakpoint\etsy\Classes\EtsyResults;
 use breakpoint\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://www.etsy.com/developers/documentation/reference/collection
@@ -16,63 +19,57 @@ class Collection extends EtsyRequest {
      * See all of a page's public collections.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function findAllPageCollections(array $parameters = []) {
-        return $this->get('/pages/:page_id/collections', $parameters);
+        return $this->requestCollection('GET', '/pages/:page_id/collections', $parameters);
     }
 
     /**
+     * Create a page collection for the given page.
+     *
      * @param array $parameters
-     * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
-    public function createPageCollection(array $parameters = [], array $data = []) {
-        return $this->oauth()->post('/pages/:page_id/collections', $parameters, $data);
+    public function createPageCollection(array $parameters = []) {
+        return $this->oauth()->requestObject('POST', '/pages/:page_id/collections', $parameters);
     }
 
     /**
      * Retrieve a single page collection.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
     public function getPageCollection(array $parameters = []) {
-        return $this->get('/pages/:page_id/collections/:collection_id', $parameters);
+        return $this->requestObject('GET', '/pages/:page_id/collections/:collection_id', $parameters);
     }
 
     /**
+     * Update a page collection.
+     *
      * @param array $parameters
      * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
     public function updatePageCollection(array $parameters = [], array $data = []) {
-        return $this->oauth()->put('/pages/:page_id/collections/:collection_id', $parameters, $data);
+        return $this->oauth()->requestBool('PUT','/pages/:page_id/collections/:collection_id', $parameters, $data);
     }
 
     /**
      * Delete a page collection.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @param array $data
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
-    public function deletePageCollection(array $parameters = []) {
-        return $this->oauth()->delete('/pages/:page_id/collections/:collection_id', $parameters);
+    public function deletePageCollection(array $parameters = [], array $data = []) {
+        return $this->oauth()->requestBool('DELETE','/pages/:page_id/collections/:collection_id', $parameters, $data);
     }
 
-    /**
-     * Find the collection ids for the authorized page and listing ids
-     *
-     * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
-     * @throws \Exception
-     */
-    public function findPageCollectionsForListings(array $parameters = []) {
-        return $this->oauth()->get('/pages/:page_id/collections/listings_map', $parameters);
-    }
 }

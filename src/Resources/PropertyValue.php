@@ -2,7 +2,10 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
+use breakpoint\etsy\Classes\EtsyResults;
 use breakpoint\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://www.etsy.com/developers/documentation/reference/propertyvalue
@@ -16,43 +19,46 @@ class PropertyValue extends EtsyRequest {
      * Get all of the attributes for a listing
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function getAttributes(array $parameters = []) {
-        return $this->get('/listings/:listing_id/attributes', $parameters);
+        return $this->requestCollection('GET', '/listings/:listing_id/attributes', $parameters);
     }
 
     /**
      * Get an attribute for a listing
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
     public function getAttribute(array $parameters = []) {
-        return $this->get('/listings/:listing_id/attributes/:property_id', $parameters);
+        return $this->requestObject('GET', '/listings/:listing_id/attributes/:property_id', $parameters);
     }
 
     /**
+     * Update or populate an attribute for a listing
+     *
      * @param array $parameters
      * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
     public function updateAttribute(array $parameters = [], array $data = []) {
-        return $this->oauth()->put('/listings/:listing_id/attributes/:property_id', $parameters, $data);
+        return $this->oauth()->requestBool('PUT','/listings/:listing_id/attributes/:property_id', $parameters, $data);
     }
 
     /**
      * Delete an attribute for a listing
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @param array $data
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
-    public function deleteAttribute(array $parameters = []) {
-        return $this->oauth()->delete('/listings/:listing_id/attributes/:property_id', $parameters);
+    public function deleteAttribute(array $parameters = [], array $data = []) {
+        return $this->oauth()->requestBool('DELETE','/listings/:listing_id/attributes/:property_id', $parameters, $data);
     }
 
 }

@@ -2,7 +2,10 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
+use breakpoint\etsy\Classes\EtsyResults;
 use breakpoint\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://www.etsy.com/developers/documentation/reference/feedback
@@ -16,44 +19,44 @@ class Feedback extends EtsyRequest {
      * Retrieves a set of Feedback objects associated to a User.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function findAllUserFeedbackAsAuthor(array $parameters = []) {
-        return $this->get('/users/:user_id/feedback/as-author', $parameters);
+        return $this->requestCollection('GET', '/users/:user_id/feedback/as-author', $parameters);
     }
 
     /**
      * Retrieves a set of Feedback objects associated to a User.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function findAllUserFeedbackAsBuyer(array $parameters = []) {
-        return $this->get('/users/:user_id/feedback/as-buyer', $parameters);
+        return $this->requestCollection('GET', '/users/:user_id/feedback/as-buyer', $parameters);
     }
 
     /**
      * Retrieves a set of Feedback objects associated to a User.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function findAllUserFeedbackAsSeller(array $parameters = []) {
-        return $this->get('/users/:user_id/feedback/as-seller', $parameters);
+        return $this->requestCollection('GET', '/users/:user_id/feedback/as-seller', $parameters);
     }
 
     /**
      * Retrieves a set of Feedback objects associated to a User.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function findAllUserFeedbackAsSubject(array $parameters = []) {
-        return $this->get('/users/:user_id/feedback/as-subject', $parameters);
+        return $this->requestCollection('GET', '/users/:user_id/feedback/as-subject', $parameters);
     }
 
     /**
@@ -63,11 +66,11 @@ class Feedback extends EtsyRequest {
                     and findAllUserFeedbackAsSubject methods.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function findAllFeedbackFromBuyers(array $parameters = []) {
-        return $this->get('/users/:user_id/feedback/from-buyers', $parameters);
+        return $this->requestCollection('GET', '/users/:user_id/feedback/from-buyers', $parameters);
     }
 
     /**
@@ -77,11 +80,11 @@ class Feedback extends EtsyRequest {
                     the findAllUserFeedbackAsBuyer and findAllUserFeedbackAsSubject methods.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function findAllFeedbackFromSellers(array $parameters = []) {
-        return $this->get('/users/:user_id/feedback/from-sellers', $parameters);
+        return $this->requestCollection('GET', '/users/:user_id/feedback/from-sellers', $parameters);
     }
 
 }

@@ -2,7 +2,10 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
+use breakpoint\etsy\Classes\EtsyResults;
 use breakpoint\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://www.etsy.com/developers/documentation/reference/billcharge
@@ -16,22 +19,11 @@ class BillCharge extends EtsyRequest {
      * Retrieves a set of BillCharge objects associated to a User. NOTE: from 8/8/12 the min_created and max_created arguments will be mandatory and can be no more than 31 days apart.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function findAllUserCharges(array $parameters = []) {
-        return $this->oauth()->get('/users/:user_id/charges', $parameters);
-    }
-
-    /**
-     * Metadata for the set of BillCharges objects associated to a User
-     *
-     * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
-     * @throws \Exception
-     */
-    public function getUserChargesMetadata(array $parameters = []) {
-        return $this->oauth()->get('/users/:user_id/charges/meta', $parameters);
+        return $this->oauth()->requestCollection('GET', '/users/:user_id/charges', $parameters);
     }
 
 }

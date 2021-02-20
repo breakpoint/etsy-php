@@ -2,7 +2,10 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
 use breakpoint\etsy\Classes\EtsyRequest;
+use breakpoint\etsy\Classes\EtsyResults;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://groups.google.com/g/etsy-api-v2/c/_TA7DrM2uSU/m/rSs2INR9orQJ
@@ -15,11 +18,11 @@ class Application extends EtsyRequest {
     /**
      * Returns all provisional users currently added for your application. Initially, this will be an empty list, []. This list does not include the user who owns the application, so seeing an empty list does not indicate that you can no longer authenticate as the application owner.
      *
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyResults|ResponseInterface
      * @throws \Exception
      */
     public function getProvisional() {
-        return $this->v3()->get('application/provisional-users');
+        return $this->v3()->requestCollection('GET', 'application/provisional-users');
     }
 
     /**
@@ -27,11 +30,11 @@ class Application extends EtsyRequest {
      *
      * @param array $parameters
      * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
     public function addProvisional(array $parameters = [], array $data = []) {
-        return $this->v3()->post('/application/provisional-users/:user_id', $parameters, $data);
+        return $this->v3()->requestObject('POST', '/application/provisional-users/:user_id', $parameters, $data);
     }
 
     /**
@@ -39,11 +42,11 @@ class Application extends EtsyRequest {
      *
      * @param array $parameters
      * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
     public function removeProvisional(array $parameters = []) {
-        return $this->v3()->delete('application/provisional-users/:user_id', $parameters);
+        return $this->v3()->requestBool('DELETE', 'application/provisional-users/:user_id', $parameters);
     }
 
 

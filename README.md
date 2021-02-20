@@ -35,7 +35,7 @@ foreach ($results as $item) {
 
 ### Requests
 
-All requests originate with the `EtsyClient` object and are referenced as properties.  These generally correspond to the Etsy API documentation with some variations.
+All requests originate with the `EtsyClient` object and are referenced as properties.  These generally correspond to the Etsy API documentation with some variations.  Three additional types are included but not documented: `application`, `baseline` and `server`.  These are only referenced by results from the getMethodTable method.
 
 ```php
 $etsy->listing-> // method found in API documentation
@@ -89,9 +89,13 @@ $etsy->userprofile->updateUserProfile(
 
 ## Results
 
-Only `GET` requests will return an instance of `EtsyResults` while all others return `true` or `false` depending on their success.
+The `POST` method will always return an `EtsyObject` as the response.  The `GET` method will return either a `EtsyResults` or `EtsyObject` based on how many items are expected to be returned.  If you are fetching a listing then an `EtsyObject` will be returned while if you are fetching active listings then `EtsyResults` will be returned.
 
-### EtsyResult
+All other requests (`PUT`, `PATCH`, `DELETE`) will return a `true` or `false` depending upon their response.
+
+*Note: return values have been generated automatically then manually reviewed.  Please create an issue or pull request if value is not as expected.*  
+
+### EtsyResults
 
 The `EtsyResults` object is a simple iterable and array accessible collection.  All items within the collection are instances of `EtsyObject`. A few basic methods are available:
 
@@ -100,7 +104,7 @@ $results = $etsy->listing->findAllFeaturedListings();
 
 $results[0]; // access the item at that position
 $results->count(); // returns number of items
-$results->first(); // access the first item; useful for requests that only return a single item
+$results->first(); // access the first item
 $results->add(object); // useful if you are performing requests with multiple pages
 ```
 
@@ -109,8 +113,7 @@ $results->add(object); // useful if you are performing requests with multiple pa
 This simple object allows you to access the individual results as properties via magic methods.
 
 ```php
-$results = $etsy->listing->getListing(['listing_id' => 'listing_123']);
-$listing = $results->first();
+$listing = $etsy->listing->getListing(['listing_id' => 'listing_123']);
 
 echo $listing->title;
 echo $listing->getType(); // 'Listing'

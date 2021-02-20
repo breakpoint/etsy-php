@@ -9,8 +9,9 @@
 
 require('vendor/autoload.php');
 
-$etsy = new \breakpoint\etsy\EtsyClient('your-keystring-here', 'your-secret-here');
-$array = $etsy->ApiMethod->getMethodTable();
+$etsy = new \breakpoint\etsy\EtsyClient('r6hzp07ki1sv7dg9z2quk1ss', '8l02jkktoi');
+
+$array = $etsy->apimethod->getMethodTable();
 
 // define where to output files
 $where = 'output/';
@@ -41,7 +42,10 @@ $output =
     
 namespace breakpoint\\etsy\Resources;
 
+use breakpoint\\etsy\Classes\EtsyObject;
+use breakpoint\\etsy\Classes\EtsyResults;
 use breakpoint\\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://www.etsy.com/developers/documentation/reference/".strtolower($type)."
@@ -57,17 +61,19 @@ class ".ucfirst($type)." extends EtsyRequest {
 
         $methods_added++;
 
-        if (in_array($method->http_method, ['PUT', 'POST'])) {
+        if (in_array($method->http_method, ['PUT', 'PATCH', 'DELETE'])) {
 
             $output .= "
     /**
+     * $method->description
+     *
      * @param array \$parameters
      * @param array \$data
-     * @return bool|\breakpoint\\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
     public function $method->name(array \$parameters = [], array \$data = []) {
-        return \$this->" . ($method->visibility == 'private' ? "oauth()->" : "") . strtolower($method->http_method) . "('$method->uri', \$parameters, \$data);
+        return \$this->" . ($method->visibility == 'private' ? "oauth()->" : "") ."requestBool('".strtoupper($method->http_method)."','$method->uri', \$parameters, \$data);
     }
 ";
 
@@ -78,11 +84,11 @@ class ".ucfirst($type)." extends EtsyRequest {
      * $method->description
      *
      * @param array \$parameters
-     * @return bool|\breakpoint\\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return ".(strpos($method->description, 'by id') || strtoupper($method->http_method) == 'POST' ? 'EtsyObject' : 'EtsyResults')."|ResponseInterface
      * @throws \Exception
      */
     public function " . $method->name . "(array \$parameters = []) {
-        return \$this->" . ($method->visibility == 'private' ? "oauth()->" : "") . strtolower($method->http_method) . "('$method->uri', \$parameters);
+        return \$this->" . ($method->visibility == 'private' ? "oauth()->" : "") .(strpos($method->description, 'by id') || strtoupper($method->http_method) == 'POST' ? 'requestObject' : 'requestCollection')."('".strtoupper($method->http_method)."', '$method->uri', \$parameters);
     }
 ";
         }

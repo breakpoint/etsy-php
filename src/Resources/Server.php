@@ -2,7 +2,9 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
 use breakpoint\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at:
@@ -16,21 +18,21 @@ class Server extends EtsyRequest {
      * Check that the server is alive.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
     public function ping(array $parameters = []) {
-        return $this->get('/server/ping', $parameters);
+        return $this->requestObject('GET', '/server/ping', $parameters);
     }
 
     /**
      * Get server time, in epoch seconds notation.
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
     public function getServerEpoch(array $parameters = []) {
-        return $this->get('/server/epoch', $parameters);
+        return $this->requestObject('GET', '/server/epoch', $parameters);
     }
 }

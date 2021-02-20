@@ -2,7 +2,10 @@
     
 namespace breakpoint\etsy\Resources;
 
+use breakpoint\etsy\Classes\EtsyObject;
+use breakpoint\etsy\Classes\EtsyResults;
 use breakpoint\etsy\Classes\EtsyRequest;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents methods available at: https://www.etsy.com/developers/documentation/reference/avatar
@@ -13,24 +16,25 @@ use breakpoint\etsy\Classes\EtsyRequest;
 class Avatar extends EtsyRequest {
 
     /**
+     * Upload a new user avatar image
+     *
      * @param array $parameters
-     * @param array $data
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
-    public function uploadAvatar(array $parameters = [], array $data = []) {
-        return $this->oauth()->post('/users/:user_id/avatar', $parameters, $data);
+    public function uploadAvatar(array $parameters = []) {
+        return $this->oauth()->requestObject('POST', '/users/:user_id/avatar', $parameters);
     }
 
     /**
      * Get avatar image source
      *
      * @param array $parameters
-     * @return bool|\breakpoint\etsy\Classes\EtsyResults|\Psr\Http\Message\MessageInterface
+     * @return EtsyObject|ResponseInterface
      * @throws \Exception
      */
     public function getAvatarImgSrc(array $parameters = []) {
-        return $this->get('/users/:user_id/avatar/src', $parameters);
+        return $this->requestObject('GET', '/users/:user_id/avatar/src', $parameters);
     }
 
 }

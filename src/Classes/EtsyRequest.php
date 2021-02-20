@@ -4,10 +4,9 @@ namespace breakpoint\etsy\Classes;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Subscriber\Oauth\Oauth1;
-use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Represents a request to the Etsy api.
@@ -26,10 +25,10 @@ class EtsyRequest {
     private Client $client;
 
     // request settings
+    private string $endpoint = self::V2_URI;
     private bool $raw = false;
     private array $fields = [];
     private array $associations = [];
-    private bool $v3 = false;
 
     /**
      * EtsyRequest constructor.
@@ -47,7 +46,19 @@ class EtsyRequest {
         // store config
         $this->config = $config;
 
-        // setup standard client since no oauth values
+        // use V2 endpoint by default
+        $this->v2();
+    }
+
+    /**
+     * Helper function to use the V2 endpoint.
+     */
+    protected function v2() {
+
+        // store endpoint using
+        $this->endpoint = self::V2_URI;
+
+        // setup standard client when no oauth values
         if (null === $this->config['token_access'] || null === $this->config['token_secret']) {
             $this->client = new Client(['base_uri' => self::V2_URI]);
 
@@ -69,6 +80,8 @@ class EtsyRequest {
                 'auth' => 'oauth',
             ]);
         }
+
+        return $this;
     }
 
     /**
@@ -77,7 +90,13 @@ class EtsyRequest {
      * @return $this
      */
     protected function v3() {
-        $this->v3 = true;
+
+        // store endpoint using
+        $this->endpoint = self::V3_URI;
+
+        // setup client
+        $this->client = new Client(['base_uri' => self::V3_URI]);
+
         return $this;
     }
 
@@ -136,7 +155,7 @@ class EtsyRequest {
         $options['query'] = $parameters;
 
         // using v3 endpoint
-        if ($this->v3) {
+        if ($this->endpoint === self::V3_URI) {
             $options['headers'] = ['x-api-key' => $this->config['keystring']];
         } else {
 
@@ -168,6 +187,43 @@ class EtsyRequest {
         }
 
         return $options;
+    }
+
+    /**
+     * Constructs the path for this request by replacing :parameters.
+     *
+     * @param string $path
+     * @param array $parameters
+     * @return string
+     * @throws \Exception
+     */
+    private function buildPath(string $path, array $parameters = []) {
+
+        // make sure path does not start with /; will ignore v2/ in base uri
+        if (substr($path, 0, 1) == '/') {
+            $path = substr($path, 1);
+        }
+
+        // replace :parameters with value
+        foreach ($parameters as $key => $value) {
+
+            // required url parameters
+            if (strpos($path, ":$key") > 0) {
+
+                // replace
+                $path = str_replace(":$key", $value, $path);
+
+                // remove from query parameters
+                unset($parameters[$key]);
+            }
+        }
+
+        // required parameter is missing
+        if (strpos($path, ':') > 0) {
+            throw new \Exception('Etsy-PHP: Required parameter is missing.');
+        }
+
+        return $path;
     }
 
     /**
@@ -245,7 +301,7 @@ class EtsyRequest {
      *
      * @param $path
      * @param array $parameters
-     * @return EtsyResults|MessageInterface
+     * @return EtsyObject|EtsyResults|ResponseInterface
      * @throws \Exception
      */
     protected function get($path, array $parameters = []) {
@@ -258,7 +314,7 @@ class EtsyRequest {
      * @param $path
      * @param array $parameters
      * @param array $data
-     * @return bool|EtsyResults|MessageInterface
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
     protected function post($path, array $parameters = [], array $data = []) {
@@ -271,7 +327,7 @@ class EtsyRequest {
      * @param $path
      * @param array $parameters
      * @param array $data
-     * @return bool|EtsyResults|MessageInterface
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
     protected function patch($path, array $parameters = [], array $data = []) {
@@ -283,7 +339,7 @@ class EtsyRequest {
      *
      * @param $path
      * @param array $parameters
-     * @return bool|EtsyResults|MessageInterface
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
     protected function delete($path, array $parameters = []) {
@@ -296,12 +352,93 @@ class EtsyRequest {
      * @param $path
      * @param array $parameters
      * @param array $data
-     * @return bool|EtsyResults|MessageInterface
+     * @return bool|ResponseInterface
      * @throws \Exception
      */
     protected function put($path, array $parameters = [], array $data = []) {
         return $this->request($path, 'PUT', $parameters, $data);
     }
+
+
+    /** @noinspection PhpInconsistentReturnPointsInspection */
+    protected function requestObject(string $method, string $path, array $parameters = [], array $data = []) {
+
+        try {
+
+            // perform request
+            $response = $this->client->request($method, $this->buildPath($path, $parameters), $this->buildGuzzleOptions($parameters, $data));
+
+            // decode and store contents
+            $contents = json_decode($response->getBody()->getContents(), true);
+
+            // always return an array of results
+            return $this->raw ? $response : (isset($contents['results'][0]) ? new EtsyObject($contents['results'][0]) : null);
+
+        } catch (ClientException $e) {
+            $this->handleExeption($e);
+        }
+    }
+
+    /** @noinspection PhpInconsistentReturnPointsInspection */
+    protected function requestCollection(string $method, string $path, array $parameters = [], array $data = []) {
+
+        try {
+
+            // perform request
+            $response = $this->client->request($method, $this->buildPath($path, $parameters), $this->buildGuzzleOptions($parameters, $data));
+
+            // decode and store contents
+            $contents = json_decode($response->getBody()->getContents(), true);
+
+            // always return an array of results
+            return $this->raw ? $response : new EtsyResults($contents);
+
+        } catch (ClientException $e) {
+            $this->handleExeption($e);
+        }
+    }
+
+    /** @noinspection PhpInconsistentReturnPointsInspection */
+    protected function requestBool(string $method, string $path, array $parameters = [], array $data = []) {
+
+        try {
+
+            // perform request
+            $response = $this->client->request($method, $this->buildPath($path, $parameters), $this->buildGuzzleOptions($parameters, $data));
+
+            return $this->raw ? $response : in_array($response->getStatusCode(), [200, 201]);
+
+        } catch (ClientException $e) {
+            $this->handleExeption($e);
+        }
+    }
+
+    /**
+     * Helper function to rethrow exception with more meaningful message.
+     *
+     * @param \Exception $exception
+     * @return null
+     * @throws \Exception
+     */
+    private function handleExeption(\Exception $exception) {
+
+        switch ($exception->getCode()) {
+            case 400:
+                throw new \Exception('Etsy-PHP: 400 Bad Request; check your request parameters.');
+            case 403:
+                throw new \Exception('Etsy-PHP: Authenticated required for this method or credentials are missing.');
+            case 404:
+                return null; // nothing found
+            case 500:
+                throw new \Exception('Etsy-PHP: 500 Server Error; please try again.');
+            case 503:
+                throw new \Exception('Etsy-PHP: 503 Service Unavailable; please try again later.');
+        }
+
+        throw new \Exception("Etsy-PHP: An unknown error has occurred.");
+    }
+
+
 
     /**
      * Performs the request.
@@ -310,71 +447,21 @@ class EtsyRequest {
      * @param string $method
      * @param array $parameters
      * @param array $data
-     * @return bool|EtsyResults|MessageInterface|null
+     * @return bool|EtsyResults|ResponseInterface|null
      * @throws \Exception
      */
     protected function request($path, $method = 'GET', array $parameters = [], array $data = []) {
 
-        // make sure path does not start with /; will ignore v2/ in base uri
-        if (substr($path, 0, 1) == '/') {
-            $path = substr($path, 1);
-        }
-
-        // replace :parameters with value
-        foreach ($parameters as $key => $value) {
-
-            // required url parameters
-            if (strpos($path, ":$key") > 0) {
-
-                // replace
-                $path = str_replace(":$key", $value, $path);
-
-                // remove from query parameters
-                unset($parameters[$key]);
-            }
-        }
-
-        // required parameter is missing
-        if (strpos($path, ':') > 0) {
-            throw new \Exception('Etsy-PHP: Required parameter is missing.');
-        }
 
         try {
-
-            // use v3 client?
-            $client = $this->v3 ? new Client(['base_uri' => self::V3_URI]) : $this->client;
-
-            $response = $client->request($method, $path, $this->buildGuzzleOptions($parameters, $data));
-
-            // clear settings for another request
-            $this->fields = [];
-            $this->associations = [];
-            $this->v3 = false;
+            $response = $this->client->request($method, $this->buildPath($path, $parameters), $this->buildGuzzleOptions($parameters, $data));
 
             // wants raw response
             if ($this->raw) {
-
-                // restore default for subsequent requests
-                $this->raw = false;
-
                 return $response;
             }
 
-            // expecting results
-            if ($method == 'GET') {
-
-                // decode and store contents
-                $contents = json_decode($response->getBody()->getContents(), true);
-
-                if ($response->getStatusCode() == 404) {
-                    return null;
-                }
-
-                // always return an array of results
-                return new EtsyResults($contents);
-            }
-
-            return in_array($response->getStatusCode(), [200, 201]);
+            return $this->raw ? $response : $this->response($response, $method === 'GET');
 
         } catch (ClientException $e) {
 
@@ -394,5 +481,26 @@ class EtsyRequest {
         }
 
         throw new \Exception("Etsy-PHP: An unknown error has occurred.");
+    }
+
+    private function response(ResponseInterface $response, $get = false) {
+
+        // expecting results
+        if ($get) {
+
+            // decode and store contents
+            $contents = json_decode($response->getBody()->getContents(), true);
+
+            // not found
+            if ($response->getStatusCode() == 404) {
+                return null;
+            }
+
+
+            // always return an array of results
+            return new EtsyResults($contents);
+        }
+
+        return in_array($response->getStatusCode(), [200, 201]);
     }
 }
